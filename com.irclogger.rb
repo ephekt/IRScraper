@@ -15,7 +15,8 @@ end
 
 # Some vars we'll use throughout the script
 END_DATE = Date.today - 1
-START_DATE = Date.parse("2008-04-22")
+START_DATE = Date.parse("2010-10-17")
+#START_DATE = Date.parse("2008-08-10")
 ROOT_URL = "http://irclogger.com/"
 
 puts "Start/End Date: #{START_DATE.nice_format}/#{END_DATE.nice_format}"
@@ -39,8 +40,9 @@ puts "Channels monitored: #{channels_logged*' '}"
 Dir.mkdir(DIR_PATH) unless File.directory?(DIR_PATH)
 channels_logged.each do |ch|
   dir = "#{DIR_PATH}#{ch}"
+  next if File.directory?(dir)
   puts "Creating #{dir}"
-  Dir.mkdir(dir) unless File.directory?(dir)
+  Dir.mkdir(dir)
 end
 
 # Enumerate each day from start until today:
@@ -60,5 +62,6 @@ START_DATE.upto(END_DATE) do |date|
     else
       puts "Grabbing #{channel_url} however, nothing to grab"
     end
+    sleep(0.5)
   end
 end
