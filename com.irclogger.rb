@@ -8,7 +8,7 @@ end
 
 def grab_page url
   raise unless url
-  Nokogiri::HTML(Typhoeus::Request.get(url).body)
+  Typhoeus::Request.get(url)
 end
 
 # Some vars we'll use throughout the script
@@ -23,23 +23,35 @@ channels_logged = if File.exists?("channels_monitored.csv")
   File.read("channels_monitored.csv").split(",")
 else
   puts "Grab the list of supported channels and write to disk"
-  set = grab_page(ROOT_URL).xpath("//section//ul//li//a")
-  channels = set[3,set.size].map { |s| s['href'].split("/")[1] }
+  set = Nokogiri::HTML(grab_page(ROOT_URL).body).xpath("//section//ul//li//a")
+  channels = set[3,set.size].map { |s| s['href'].split("/")[1].tr(".","").gsub(" ","_") }
   File.open("channels_monitored.csv","w+") do |file|
     file.write(channels.join(','))
   end
   channels
 end
 
-print "Channels monitored: #{channels_logged*' '}"
+puts "Channels monitored: #{channels_logged*' '}"
+
+# Create directories
+channels_logged.each do |ch|
+  puts "Creating #{ch}"
+  Dir.mkdir(ch) unless File.directory?(ch)
+end
 
 # Enumerate each day from start until today:
 # * fetch log from the web and parse
 # * store Date log content to file if it does not already exit
 START_DATE.upto(END_DATE) do |date|
   channels_logged.each do |channel|
+    next if File.exists?("#{channel}/#{date.nice_format}")
+    
     channel_url = "#{ROOT_URL}#{channel}/#{date.nice_format}"
-    puts "Grabbing #{channel_url}"
-    #grab_page channel_url
+    store_path= "#{channel}/#{date.nice_format}"
+    puts "Grabbing #{channel_url} and storing to #{store_path}"
+    File.open(store_path,"w+") do |f|
+      f.write(grab_page(channel_url).body)
+    end
   end
+  exit
 end
