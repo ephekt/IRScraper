@@ -1,5 +1,7 @@
 %w(rubygems typhoeus json nokogiri date).each { |resource| require resource }
 
+DIR_PATH = "irclogger/"
+
 class Date 
   def nice_format
     self.strftime('%Y-%m-%d') 
@@ -13,7 +15,7 @@ end
 
 # Some vars we'll use throughout the script
 END_DATE = Date.today - 1
-START_DATE = Date.parse("2008-02-09")
+START_DATE = Date.parse("2008-04-22")
 ROOT_URL = "http://irclogger.com/"
 
 puts "Start/End Date: #{START_DATE.nice_format}/#{END_DATE.nice_format}"
@@ -34,9 +36,11 @@ end
 puts "Channels monitored: #{channels_logged*' '}"
 
 # Create directories
+Dir.mkdir(DIR_PATH) unless File.directory?(DIR_PATH)
 channels_logged.each do |ch|
-  puts "Creating #{ch}"
-  Dir.mkdir(ch) unless File.directory?(ch)
+  dir = "#{DIR_PATH}#{ch}"
+  puts "Creating #{dir}"
+  Dir.mkdir(dir) unless File.directory?(dir)
 end
 
 # Enumerate each day from start until today:
@@ -44,14 +48,17 @@ end
 # * store Date log content to file if it does not already exit
 START_DATE.upto(END_DATE) do |date|
   channels_logged.each do |channel|
-    next if File.exists?("#{channel}/#{date.nice_format}")
+    store_path = "#{DIR_PATH}#{channel}/#{date.nice_format}.txt"
+    next if File.exists?(store_path)
     
-    channel_url = "#{ROOT_URL}#{channel}/#{date.nice_format}"
-    store_path= "#{channel}/#{date.nice_format}"
-    puts "Grabbing #{channel_url} and storing to #{store_path}"
-    File.open(store_path,"w+") do |f|
-      f.write(grab_page(channel_url).body)
+    channel_url = "#{ROOT_URL}.#{channel}/#{date.nice_format}"
+    log_text = grab_page(channel_url).body
+    unless log_text.empty?
+      puts "Grabbing #{channel_url} and storing to #{store_path}"
+      puts log_text.inspect
+      File.open(store_path,"w+") { |f| f.write(log_text) }
+    else
+      puts "Grabbing #{channel_url} however, nothing to grab"
     end
   end
-  exit
 end
