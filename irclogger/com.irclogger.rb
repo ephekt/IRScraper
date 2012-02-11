@@ -7,11 +7,11 @@ class Date
 end
 
 # Some vars we'll use throughout the script
-TODAYS_DATE = Date.today
+END_DATE = Date.today - 1
 START_DATE = Date.parse("2008-02-09")
 root_url = "http://irclogger.com/"
 
-puts "Start/End Date: #{START_DATE.nice_format}/#{TODAYS_DATE.nice_format}"
+puts "Start/End Date: #{START_DATE.nice_format}/#{END_DATE.nice_format}"
 
 channels_logged = if File.exists?("channels_monitored.csv")
   puts "Already had channels monitored written to disk"
@@ -28,11 +28,9 @@ end
 
 print "Channels monitored: #{channels_logged*' '}"
 
-exit
-
 # Enumerate each day from start until today:
 # * fetch log from the web and parse
 # * store Date log content to file if it does not already exit
-START_DATE.upto(TODAYS_DATE) do |date|
+START_DATE.upto(END_DATE) do |date|
   puts date.nice_format
 end

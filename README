@@ -1,1 +1,3 @@
 Initial scraper will pull down from http://irclogger.com/ ;) Sorry for any server load...
+
+Look to use https://github.com/cschneid/irclogger/tree/master/bot for future scraping... and adding new channels to monitor as a data source
