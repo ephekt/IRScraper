@@ -1,3 +1,5 @@
+exit unless $0 == __FILE__
+
 %w(rubygems typhoeus json nokogiri date).each { |resource| require resource }
 
 DIR_PATH = "irclogger/"
