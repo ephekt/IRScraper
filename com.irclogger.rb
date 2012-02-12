@@ -19,6 +19,9 @@ START_DATE = Date.parse("2010-10-17")
 #START_DATE = Date.parse("2008-08-10")
 ROOT_URL = "http://irclogger.com/"
 
+# Only scrape from CLI
+exit unless $0 == __FILE__
+
 puts "Start/End Date: #{START_DATE.nice_format}/#{END_DATE.nice_format}"
 
 channels_logged = if File.exists?("channels_monitored.csv")
