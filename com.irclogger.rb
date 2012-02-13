@@ -1,3 +1,5 @@
+exit unless $0 == __FILE__
+
 %w(rubygems typhoeus json nokogiri date).each { |resource| require resource }
 
 DIR_PATH = "irclogger/"
@@ -12,17 +14,6 @@ def grab_page url
   raise unless url
   Typhoeus::Request.get(url)
 end
-
-# Some vars we'll use throughout the script
-END_DATE = Date.today - 1
-START_DATE = Date.parse("2010-10-17")
-#START_DATE = Date.parse("2008-08-10")
-ROOT_URL = "http://irclogger.com/"
-
-# Only scrape from CLI
-exit unless $0 == __FILE__
-
-puts "Start/End Date: #{START_DATE.nice_format}/#{END_DATE.nice_format}"
 
 channels_logged = if File.exists?("channels_monitored.csv")
   puts "Already had channels monitored written to disk"
@@ -39,14 +30,30 @@ end
 
 puts "Channels monitored: #{channels_logged*' '}"
 
-# Create directories
+latest_log_timestamp = []
+
 Dir.mkdir(DIR_PATH) unless File.directory?(DIR_PATH)
 channels_logged.each do |ch|
   dir = "#{DIR_PATH}#{ch}"
-  next if File.directory?(dir)
-  puts "Creating #{dir}"
-  Dir.mkdir(dir)
+  if File.directory?(dir)
+    latest_log_timestamp << `ls '#{dir}'| tail -n1`
+    next
+  else
+    puts "Creating #{dir}"
+    Dir.mkdir(dir)
+  end
 end
+
+# -------
+# Start Date -> Yesterday
+# End Date -> Find latest log captured and go from there
+# -------
+END_DATE = Date.today - 1
+START_DATE = Date.parse latest_log_timestamp.sort.last.split('.').first
+ROOT_URL = "http://irclogger.com/"
+
+puts "Start/End Date: #{START_DATE.nice_format}/#{END_DATE.nice_format}"
+
 
 # Enumerate each day from start until today:
 # * fetch log from the web and parse
