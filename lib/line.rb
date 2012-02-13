@@ -49,7 +49,7 @@ class Line
 	end
 
 	def contains_praise?
-		@words.map(&:downcase).include?["thank", "thanks", "helpful"]
+		@words.join(" ").downcase.include?["thank"]
 	end
 end
 
